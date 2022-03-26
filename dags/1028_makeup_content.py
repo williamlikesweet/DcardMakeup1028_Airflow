@@ -9,8 +9,6 @@ from bs4 import BeautifulSoup
 import requests
 from datetime import datetime
 import pendulum
-import time
-import random
 import json
 import pandas as pd
 from myModels.random_header import Generate_Random_Header
@@ -31,15 +29,15 @@ def getprocess_0():
 
 
 def update_process1():
-    ID = Crawl_ID_Content()
-    ID= str(ID)[1:-2]
+    post_ID = Crawl_ID_Content()
+    post_ID =  str(post_ID)[1:-2]
     pg_hook = PostgresHook(
         postgres_conn_id='postgres_1028makeup_localhost',
         schema='1028_makeup'
     )
     update_process = f"""
         UPDATE dcard_outline SET process = 1 
-        where id = '{ID}';
+        where id = '{post_ID}';
     """
     pg_hook.run(update_process)
     return
@@ -60,9 +58,9 @@ def checkDcard_id(postid):
     return cursor.fetchone()
 
 def Crawl_ID_Content():
-    ID = getprocess_0()
-    # getMinid()fetchone Value is [] ex.. [238425989,] ; fetchall Value is [tuple] ex.. [(238425989,)]
-    link = 'https://www.dcard.tw/service/api/v2/posts/' + str(ID)[1:-2]
+    post_ID = getprocess_0()
+    # getMinid()fetchone Value is [] ex.. [238425989,] ; fetchall Value is [tuple] ex.. [(238431085,)]
+    link = 'https://www.dcard.tw/service/api/v2/posts/' + str(post_ID)[1:-2]
     requ = requests.get(link,headers=Generate_Random_Header())
     rejs = json.loads(requ.content.decode(encoding='utf8'))
     if requ.status_code != requests.codes.ok:
@@ -93,7 +91,7 @@ def Crawl_ID_Content():
                 pg_hook.run(dts_insert, parameters=(postid, title, content, excerpt, commentCount, gender, likeCount, topics, createdAt))
             else:
                 pass
-    return ID
+    return post_ID
 
 local_tz = pendulum.timezone("Asia/Shanghai")
 default_args = {
@@ -105,7 +103,7 @@ with DAG(
     dag_id='1028_Dcard_Content',
     default_args = default_args,
     start_date= datetime(2022, 3, 26),
-    schedule_interval='*/3 * * * *',
+    schedule_interval='*/5 * * * *',
     catchup=False
 
 ) as dag:

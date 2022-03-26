@@ -10,7 +10,6 @@ import requests
 from datetime import datetime
 import pendulum
 import time
-import random
 import json
 import pandas as pd
 from myModels.random_header import Generate_Random_Header
